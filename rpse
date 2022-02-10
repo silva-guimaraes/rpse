@@ -5,8 +5,7 @@ from pathlib import Path
 # RPSE RENAME AND PAIR SUBTITLES AND EPISODES
 
 
-def get_episodes(input_file):
-
+def fetch_dir(input_file):
     target_first_file = Path(input_file)
     file_dir = Path(os.path.dirname(target_first_file))
 
@@ -30,28 +29,31 @@ def print_dir(target_file1):
 if (len(sys.argv) < 3):
     exit(1)
 
-print_n_exit = False
-episodes = []
-subtitles = []
+# primeiro arquivo especificado
+source_dir = []
+# segundo arquivo especificado
+dest_dir = []
+
+dump = False
 
 for i in sys.argv[1:]:
     if (i == "-p"):
-        print_n_exit = True
-    elif not episodes:
-        episodes = get_episodes(i)
-    elif not subtitles:
-        subtitles = get_episodes(i)
+        dump = True
+    elif not source_dir:
+        source_dir = fetch_dir(i)
+    elif not dest_dir:
+        dest_dir = fetch_dir(i)
 
-if (print_n_exit):
-    print_dir(episodes)
-    print_dir(subtitles)
-    print(len(episodes))
-    print(len(subtitles))
-    exit(1)
+if (dump):
+    print_dir(source_dir)
+    print_dir(dest_dir)
+    print(len(source_dir))
+    print(len(dest_dir))
+    exit(0)
 
-for i in range(min(len(episodes), len(subtitles))):
-    # local da legenda + nome do episodio + extensao original da legenda
-    subtitles[i].rename(
-            subtitles[0].parent / Path(
-                episodes[i].name).with_suffix(
-                subtitles[0].suffix))
+for i in range(min(len(source_dir), len(dest_dir))):
+    # local do destino + nome da origem + extensao do destino
+    dest_dir[i].rename(
+            dest_dir[0].parent / Path(
+                source_dir[i].name).with_suffix(
+                dest_dir[0].suffix))
