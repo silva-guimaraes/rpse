@@ -1,0 +1,57 @@
+#!/usr/bin/env python3
+import sys
+import os
+from pathlib import Path
+# RPSE RENAME AND PAIR SUBTITLES AND EPISODES
+
+
+def get_episodes(input_file):
+
+    target_first_file = Path(input_file)
+    file_dir = Path(os.path.dirname(target_first_file))
+
+    file_buffer = []
+
+    for i in file_dir.iterdir():
+        if(i.suffix == target_first_file.suffix):
+            file_buffer.append(Path(i))
+
+    file_buffer.sort()
+
+    t_first_file_index = file_buffer.index(target_first_file)
+    return file_buffer[t_first_file_index:]
+
+
+def print_dir(target_file1):
+    for i in target_file1:
+        print(i)
+
+
+if (len(sys.argv) < 3):
+    exit(1)
+
+print_n_exit = False
+episodes = []
+subtitles = []
+
+for i in sys.argv[1:]:
+    if (i == "-p"):
+        print_n_exit = True
+    elif not episodes:
+        episodes = get_episodes(i)
+    elif not subtitles:
+        subtitles = get_episodes(i)
+
+if (print_n_exit):
+    print_dir(episodes)
+    print_dir(subtitles)
+    print(len(episodes))
+    print(len(subtitles))
+    exit(1)
+
+for i in range(min(len(episodes), len(subtitles))):
+    # local da legenda + nome do episodio + extensao original da legenda
+    subtitles[i].rename(
+            subtitles[0].parent / Path(
+                episodes[i].name).with_suffix(
+                subtitles[0].suffix))
