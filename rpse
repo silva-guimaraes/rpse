@@ -3,6 +3,8 @@ import sys
 import os
 from pathlib import Path
 # RPSE RENAME AND PAIR SUBTITLES AND EPISODES
+# todo: adicionar suporte para arquivos zip
+#       opção pra modificar o delay das legendas
 
 
 def fetch_dir(input_file):
