@@ -1,61 +1,91 @@
 #!/usr/bin/env python3
 import sys
 import os
+import zipfile
+import pysubs2
+import argparse
 from pathlib import Path
 # RPSE RENAME AND PAIR SUBTITLES AND EPISODES
-# todo: adicionar suporte para arquivos zip
-#       opção pra modificar o delay das legendas
+# todo:
+# adicionar suporte para arquivos zip
+# opção pra modificar o delay das legendas
+# funcionalidade pra escolher a ordem dos arquivos no estilo\
+#         concat protocol do ffmpeg
 
-
-def fetch_dir(input_file):
-    target_first_file = Path(input_file)
-    file_dir = Path(os.path.dirname(target_first_file))
+def fetch_remaining_files(input_file, excluded, sort=True):
+    first_target_file = Path(input_file)
+    file_dir = Path(os.path.dirname(first_target_file))
 
     file_buffer = []
 
     for i in file_dir.iterdir():
-        if(i.suffix == target_first_file.suffix):
+        if(i.suffix == first_target_file.suffix):
             file_buffer.append(Path(i))
 
-    file_buffer.sort()
+    for i in excluded:
+        file_buffer.remove(i)
 
-    t_first_file_index = file_buffer.index(target_first_file)
-    return file_buffer[t_first_file_index:]
+    if(sort):
+        file_buffer.sort()
+
+    try:
+        first_file_index = file_buffer.index(first_target_file)
+    except ValueError:
+        print('arquivo inexistente')
+        exit(1)
+
+    return file_buffer[first_file_index:]
 
 
-def print_dir(target_file1):
-    for i in target_file1:
+def fetch_zip(input_zip):
+    input_zip = zipfile.ZipFile(input_zip)
+    print(input_zip.infolist())
+
+
+def handle_input_dir(input_dir):
+    if (zipfile.is_zipfile(input_dir)):
+        fetch_zip(input_dir)
+
+
+def print_files(f):
+    for i in f:
         print(i)
 
 
-if (len(sys.argv) < 3):
-    exit(1)
+def main():
+    parser = argparse.ArgumentParser(prog='rpse', description='renomear e parear arquivos de legendas com episódios')
+    parser.add_argument('ep', metavar='ep', type=str, nargs=1)
+    parser.add_argument('sub', metavar='sub', type=str, nargs=1)
+    parser.add_argument('-p', '--preview', action='store_true')
+    parser.add_argument('-d', '--delay', nargs=1, default=[0], type=int)
+    parser.add_argument('-e', '--exclude', default=[], type=str, nargs='+')
 
-# primeiro arquivo especificado
-source_dir = []
-# segundo arquivo especificado
-dest_dir = []
+    namespace = parser.parse_args()
 
-dump = False
+    delay = namespace.delay[0]
+    excluded = namespace.exclude
+    eps = fetch_remaining_files(namespace.ep[0], excluded)
+    subs = fetch_remaining_files(namespace.sub[0], excluded)
 
-for i in sys.argv[1:]:
-    if (i == "-p"):
-        dump = True
-    elif not source_dir:
-        source_dir = fetch_dir(i)
-    elif not dest_dir:
-        dest_dir = fetch_dir(i)
+    if (namespace.preview):
+        print_files(eps)
+        print_files(subs)
+        print(len(eps))
+        print(len(subs))
+        exit(0)
 
-if (dump):
-    print_dir(source_dir)
-    print_dir(dest_dir)
-    print(len(source_dir))
-    print(len(dest_dir))
-    exit(0)
+    for i in range(min(len(eps), len(subs))):
+        # local (path) da legenda + nome do episodio + extensao da legenda
+        new_name = subs[i].rename(subs[0].parent / Path(eps[i].name).with_suffix(subs[0].suffix))
 
-for i in range(min(len(source_dir), len(dest_dir))):
-    # local do destino + nome da origem + extensao do destino
-    dest_dir[i].rename(
-            dest_dir[0].parent / Path(
-                source_dir[i].name).with_suffix(
-                dest_dir[0].suffix))
+        if (delay != 0):
+            s = pysubs2.load(new_name)
+            for line in s:
+                line.start += delay
+                line.end += delay
+
+            s.save(new_name)
+
+
+if __name__ == "__main__":
+    main()
