@@ -8,8 +8,6 @@ from pathlib import Path
 # RPSE RENAME AND PAIR SUBTITLES AND EPISODES
 # todo:
 # adicionar suporte para arquivos zip
-# funcionalidade pra escolher a ordem dos arquivos no estilo\
-#         concat protocol do ffmpeg
 
 def fetch_remaining_files(input_file, excluded, sort=True):
 
@@ -35,17 +33,22 @@ def fetch_remaining_files(input_file, excluded, sort=True):
     try:
         first_file_index = file_buffer.index(first_target_file)
     except ValueError:
-        print('arquivo inexistente')
+        print('arquivo "' + first_target_file +'" inexistente')
         exit(1)
 
     return file_buffer[first_file_index:]
 
 
-def read_parse_file(file):
+def read_parse_textfile(file):
     ret = []
-    with open(file) as file:
-        for line in file:
-            ret.append(line.rstrip())
+    try:
+        with open(file) as file:
+            for line in file:
+                ret.append(Path(line.rstrip()))
+    except FileNotFoundError:
+        print('arquivo "' + file +'" inexistente')
+        exit(1)
+
     return ret
 
 
@@ -81,8 +84,8 @@ def main():
     f_sub = namespace.sub[0]
 
     if (namespace.txtfile):
-        eps = read_parse_file(f_ep)
-        subs = read_parse_file(f_subs)
+        eps = read_parse_textfile(f_ep)
+        subs = read_parse_textfile(f_sub)
     else:
         eps = fetch_remaining_files(f_ep, excluded)
         subs = fetch_remaining_files(f_sub, excluded)
