@@ -1,2 +1,3 @@
 #!/usr/bin/sh 
-rm ./foo/*.*
+TOPLEVEL=$(git rev-parse --show-toplevel) 
+rm $TOPLEVEL/teste/foo/*.*
