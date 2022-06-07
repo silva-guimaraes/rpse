@@ -8,26 +8,30 @@ from pathlib import Path
 # RPSE RENAME AND PAIR SUBTITLES AND EPISODES
 # todo:
 # adicionar suporte para arquivos zip
-# opção pra modificar o delay das legendas
 # funcionalidade pra escolher a ordem dos arquivos no estilo\
 #         concat protocol do ffmpeg
 
 def fetch_remaining_files(input_file, excluded, sort=True):
+
+    # um objeto path do arquivo em si
     first_target_file = Path(input_file)
+
+    # um objeto path do diretorio onde o arquivo fica, que deve incluir todos os outros episodios/legendas
     file_dir = Path(os.path.dirname(first_target_file))
 
     file_buffer = []
 
+    # iterar todos os outros arquivos no diretorio e juntar em uma lista os com a mesma extensão
     for i in file_dir.iterdir():
         if(i.suffix == first_target_file.suffix):
             file_buffer.append(Path(i))
 
     for i in excluded:
         file_buffer.remove(i)
-
     if(sort):
         file_buffer.sort()
 
+    # excluir todos os arquivos que vierem antes do arquivo indicado, caso algum
     try:
         first_file_index = file_buffer.index(first_target_file)
     except ValueError:
@@ -35,6 +39,14 @@ def fetch_remaining_files(input_file, excluded, sort=True):
         exit(1)
 
     return file_buffer[first_file_index:]
+
+
+def read_parse_file(file):
+    ret = []
+    with open(file) as file:
+        for line in file:
+            ret.append(line.rstrip())
+    return ret
 
 
 def fetch_zip(input_zip):
@@ -59,13 +71,21 @@ def main():
     parser.add_argument('-p', '--preview', action='store_true')
     parser.add_argument('-d', '--delay', nargs=1, default=[0], type=int)
     parser.add_argument('-e', '--exclude', default=[], type=str, nargs='+')
+    parser.add_argument('-txt', '--txtfile', action='store_true')
 
     namespace = parser.parse_args()
 
     delay = namespace.delay[0]
     excluded = namespace.exclude
-    eps = fetch_remaining_files(namespace.ep[0], excluded)
-    subs = fetch_remaining_files(namespace.sub[0], excluded)
+    f_ep = namespace.ep[0]
+    f_sub = namespace.sub[0]
+
+    if (namespace.txtfile):
+        eps = read_parse_file(f_ep)
+        subs = read_parse_file(f_subs)
+    else:
+        eps = fetch_remaining_files(f_ep, excluded)
+        subs = fetch_remaining_files(f_sub, excluded)
 
     if (namespace.preview):
         print_files(eps)
