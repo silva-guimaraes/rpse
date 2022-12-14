@@ -28,7 +28,7 @@ rpse '01_primeiro_episódio.mkv' '01_first_subtitle_file.srt'
 05_quinto_episódio.mkv 
 05_quinto_episódio.srt
 ```
-a funcionalidade padrão funciona apenas quando os arquivos podem ser ordenados em ordem alfabética. se isso não for possivel eu tambem inclui uma funcionalidade que aceita uma ordem customizada usando arquivos de texto
+a funcionalidade padrão serve apenas quando os arquivos podem ser ordenados em ordem alfabética. se isso não for possivel eu tambem inclui uma opção que aceita uma ordem customizada usando arquivos de texto
 ``` sh
 # eps.txt
 primeiro_episódio.mkv 
@@ -44,6 +44,12 @@ second_subtitle_file.srt
 third_subtitle_file.srt
 forth_subtitle_file.srt
 fifth_subtitle_file.srt
+# legendas ficariam desse modo em ordem alfabética
+# fifth_subtitle_file.srt
+# first_subtitle_file.srt
+# forth_subtitle_file.srt
+# second_subtitle_file.srt
+# third_subtitle_file.srt
 ```
 ```sh
 rpse 'eps.txt' 'subs.txt' -txt
