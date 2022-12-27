@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import sys
 import os
-import zipfile
 import pysubs2
 import argparse
 from pathlib import Path
@@ -56,9 +55,9 @@ def read_parse_textfile(file):
     return ret
 
 
-def fetch_zip(input_zip):
-    input_zip = zipfile.ZipFile(input_zip)
-    print(input_zip.infolist())
+# def fetch_zip(input_zip):
+#     input_zip = zipfile.ZipFile(input_zip)
+#     print(input_zip.infolist())
 
 
 def handle_input_dir(input_dir):
