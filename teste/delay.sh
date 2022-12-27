@@ -8,6 +8,7 @@ test_head(){
 
 cp $TEST_TOPLEVEL/bar/* $TEST_TOPLEVEL
 test_head bar
-python3 $TOPLEVEL/rpse "$TEST_TOPLEVEL/bar01.mkv" "$TEST_TOPLEVEL/foo01.srt" -d $1 || exit
+echo delay 10000
+python3 $TOPLEVEL/rpse "$TEST_TOPLEVEL/bar01.mkv" "$TEST_TOPLEVEL/foo01.srt" -d 10000 || exit 1
 printf "\n"
 test_head .

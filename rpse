@@ -5,46 +5,50 @@ import zipfile
 import pysubs2
 import argparse
 from pathlib import Path
-# RPSE RENAME AND PAIR SUBTITLES AND EPISODES
+
 # todo:
+# opção de undo
 # adicionar suporte para arquivos zip
 
 def fetch_remaining_files(input_file, excluded, sort=True):
 
     # um objeto path do arquivo em si
-    first_target_file = Path(input_file)
+    first_file = Path(input_file)
 
-    # um objeto path do diretorio onde o arquivo fica, que deve incluir todos os outros episodios/legendas
-    file_dir = Path(os.path.dirname(first_target_file))
+    # um objeto path do diretorio onde o arquivo fica, que deve incluir todos os outros
+    # episodios/legendas
+    file_dir = Path(os.path.dirname(first_file))
 
-    file_buffer = []
-
-    # iterar todos os outros arquivos no diretorio e juntar em uma lista os com a mesma extensão
+    ret = []
+    # iterar todos os outros arquivos no diretorio e juntar em uma lista os com a mesma
+    # extensão
     for i in file_dir.iterdir():
-        if(i.suffix == first_target_file.suffix):
-            file_buffer.append(Path(i))
+        if(i.suffix == first_file.suffix):
+            ret.append(Path(i))
 
     for i in excluded:
-        file_buffer.remove(i)
+        ret.remove(i)
     if(sort):
-        file_buffer.sort()
+        ret.sort()
 
     # excluir todos os arquivos que vierem antes do arquivo indicado, caso algum
     try:
-        first_file_index = file_buffer.index(first_target_file)
+        first_file_index = ret.index(first_file)
     except ValueError:
-        print('arquivo "' + first_target_file +'" inexistente')
+        print('arquivo "' + first_file +'" inexistente')
         exit(1)
 
-    return file_buffer[first_file_index:]
+    return ret[first_file_index:]
 
 
 def read_parse_textfile(file):
+
     ret = []
     try:
         with open(file) as file:
             for line in file:
                 ret.append(Path(line.rstrip()))
+
     except FileNotFoundError:
         print('arquivo "' + file +'" inexistente')
         exit(1)
@@ -68,10 +72,13 @@ def print_files(f):
 
 
 def main():
-    parser = argparse.ArgumentParser(prog='rpse', description='renomear e parear arquivos de legendas com episódios')
+
+    parser = argparse.ArgumentParser(
+        prog='rpse', description= 'renomear e parear arquivos de legendas com episódios')
     parser.add_argument('ep', metavar='ep', type=str, nargs=1)
     parser.add_argument('sub', metavar='sub', type=str, nargs=1)
     parser.add_argument('-p', '--preview', action='store_true')
+    parser.add_argument('-o', '--order', action='store_true')
     parser.add_argument('-d', '--delay', nargs=1, default=[0], type=int)
     parser.add_argument('-e', '--exclude', default=[], type=str, nargs='+')
     parser.add_argument('-txt', '--txtfile', action='store_true')
@@ -97,17 +104,29 @@ def main():
         print(len(subs))
         exit(0)
 
+    sub_suffix  = subs[0].suffix
+
     for i in range(min(len(eps), len(subs))):
-        # local (path) da legenda + nome do episodio + extensao da legenda
-        new_name = subs[i].rename(subs[0].parent / Path(eps[i].name).with_suffix(subs[0].suffix))
+
+        if namespace.order:
+            order = f'{i + 1:02d}_'
+            ep_basename =  order + eps[i].name
+            ep_new_name = eps[i].parent / Path(ep_basename)
+            eps[i].rename(ep_new_name)
+        else:
+            ep_new_name = eps[i]
+
+        sub_new_name = subs[0].parent / Path(ep_new_name.stem + sub_suffix)
+
+        subs[i].rename(sub_new_name)
 
         if (delay != 0):
-            s = pysubs2.load(new_name)
+            s = pysubs2.load(sub_new_name)
             for line in s:
                 line.start += delay
                 line.end += delay
 
-            s.save(new_name)
+            s.save(sub_new_name)
 
 
 if __name__ == "__main__":
