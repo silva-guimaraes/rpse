@@ -1,5 +1,4 @@
-#!/usr/bin/env python3
-import sys
+# import sys
 import os
 import pysubs2
 import argparse
@@ -9,32 +8,35 @@ from pathlib import Path
 # opção de undo
 # adicionar suporte para arquivos zip
 
+
 def fetch_remaining_files(input_file, excluded, sort=True):
 
     # um objeto path do arquivo em si
     first_file = Path(input_file)
 
-    # um objeto path do diretorio onde o arquivo fica, que deve incluir todos os outros
+    # um objeto path do diretorio onde o arquivo fica, que deve incluir
+    # todos os outros
     # episodios/legendas
     file_dir = Path(os.path.dirname(first_file))
 
     ret = []
-    # iterar todos os outros arquivos no diretorio e juntar em uma lista os com a mesma
-    # extensão
+    # iterar todos os outros arquivos no diretorio e juntar em uma lista os
+    # com a mesma extensão
     for i in file_dir.iterdir():
-        if(i.suffix == first_file.suffix):
+        if i.suffix == first_file.suffix:
             ret.append(Path(i))
 
     for i in excluded:
         ret.remove(i)
-    if(sort):
+    if sort:
         ret.sort()
 
-    # excluir todos os arquivos que vierem antes do arquivo indicado, caso algum
+    # excluir todos os arquivos que vierem antes do arquivo indicado,
+    # caso algum
     try:
         first_file_index = ret.index(first_file)
     except ValueError:
-        print('arquivo "' + first_file +'" inexistente')
+        print('arquivo "' + first_file + '" inexistente')
         exit(1)
 
     return ret[first_file_index:]
@@ -49,7 +51,7 @@ def read_parse_textfile(file):
                 ret.append(Path(line.rstrip()))
 
     except FileNotFoundError:
-        print('arquivo "' + file +'" inexistente')
+        print('arquivo "' + file + '" inexistente')
         exit(1)
 
     return ret
@@ -60,9 +62,9 @@ def read_parse_textfile(file):
 #     print(input_zip.infolist())
 
 
-def handle_input_dir(input_dir):
-    if (zipfile.is_zipfile(input_dir)):
-        fetch_zip(input_dir)
+# def handle_input_dir(input_dir):
+#     if (zipfile.is_zipfile(input_dir)):
+#         fetch_zip(input_dir)
 
 
 def print_files(f):
@@ -73,7 +75,8 @@ def print_files(f):
 def main():
 
     parser = argparse.ArgumentParser(
-        prog='rpse', description= 'renomear e parear arquivos de legendas com episódios')
+        prog='rpse', description='renomear e parear arquivos de legendas com \
+episódios')
     parser.add_argument('ep', metavar='ep', type=str, nargs=1)
     parser.add_argument('sub', metavar='sub', type=str, nargs=1)
     parser.add_argument('-p', '--preview', action='store_true')
@@ -103,13 +106,13 @@ def main():
         print(len(subs))
         exit(0)
 
-    sub_suffix  = subs[0].suffix
+    sub_suffix = subs[0].suffix
 
     for i in range(min(len(eps), len(subs))):
 
         if namespace.order:
             order = f'{i + 1:02d}_'
-            ep_basename =  order + eps[i].name
+            ep_basename = order + eps[i].name
             ep_new_name = eps[i].parent / Path(ep_basename)
             eps[i].rename(ep_new_name)
         else:

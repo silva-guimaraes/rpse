@@ -1,6 +1,12 @@
 from setuptools import setup
 
 setup(
-    install_requires=['pysubs2', 'argparse', 'pathlib'],
-    scripts=['./rpse']
-)
+        name='rpse',
+        install_requires=['pysubs2', 'argparse', 'pathlib'],
+        packages=['rpse'],
+        entry_points={
+            'console_scripts': [
+                'rpse=rpse.rpse:main',
+                ],
+            }
+        )
